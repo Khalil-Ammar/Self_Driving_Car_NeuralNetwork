@@ -1,5 +1,6 @@
 import cv2 as cv 
 import numpy as np
+from scipy.signal import find_peaks
 #import RPi.GPIO as gpio
 
 ###CONSTANTS
@@ -19,6 +20,7 @@ SHOW_WARP_BINARY = True
 
 #Image Processing Constants
 IMG_RESIZE_SCALE = 3
+NUM_AVGING_SECTIONS = 10
 #/Image Processing Constants
 ###/CONSTANTS
 
@@ -91,12 +93,36 @@ def detect_lanes(img):
     #The purpose of this function is to calculate the position of lane lines based on a binary, top-down image of the road
     #
     #The main steps for this function are:
-    #1. Quantization
+    #1. Averaging
     #2. Peak detection
     #3. Grouping
-    #Modified sliding window:
-    #/Sliding window
-    pass
+    #Averaging:
+    hwc = img.shape
+    height = hwc[0]
+    width = hwc[1]
+    y_step = int(height / NUM_AVGING_SECTIONS)
+    histogram = np.zeros((NUM_AVGING_SECTIONS, width))
+    
+    for y in range(NUM_AVGING_SECTIONS):
+        for x in range(width):
+            slice = img[y*y_step:(y+1)*y_step, x]
+            avg = np.average(slice)
+            histogram[y][x] = avg
+            hist = img
+            cv.line(hist, (x, y*y_step), (x, (y+1)*y_step), (avg, avg, avg), thickness=1, lineType=8, shift=0)
+    cv.imshow("Histogram", hist)
+    #/Averaging
+    
+    #Peak detection:
+    pks = img
+    for i in range(NUM_AVGING_SECTIONS):
+        peaks, _ = find_peaks(histogram[i][:], 200)
+        for peak in peaks:
+            cv.line(hist, (peak, i*y_step), (peak, (i+1)*y_step), (0, 0, 255), thickness=2, lineType=8, shift=0)
+    cv.imshow("Peaks", pks)
+    #/Peak detection
+    return hist
+    #/Averaging
 #/DETECT_LANES
 ###/FUNCTIONS
 
@@ -158,14 +184,11 @@ while True:
     # 4. Generate condensed lane image
     # 5. Give condensed lane image to neural network to obtain direction
     # 6. Update drive direction
-	
-	_, img = cap.read()
-    
-	img = process_image(img)
-    #img = detect_lanes(img)
-    
-	k = cv.waitKey(5) & 0xFF
-	if k == 27:
-		break
+    _, img = cap.read()  
+    img= process_image(img)
+    img = detect_lanes(img)
+    k = cv.waitKey(5) & 0xFF
+    if k == 27:
+        break
 cap.release()
 #####/OPERATING LOOP
