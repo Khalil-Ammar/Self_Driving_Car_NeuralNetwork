@@ -21,6 +21,8 @@ SHOW_WARP_BINARY = True
 #Image Processing Constants
 IMG_RESIZE_SCALE = 3
 NUM_AVGING_SECTIONS = 10
+AVG_THRESH = 10
+PEAK_DISTANCE = 50
 #/Image Processing Constants
 ###/CONSTANTS
 
@@ -96,32 +98,43 @@ def detect_lanes(img):
     #1. Averaging
     #2. Peak detection
     #3. Grouping
-    #Averaging:
+    #Averaging
     hwc = img.shape
     height = hwc[0]
     width = hwc[1]
+    cv.line(img, (0, 0), (0, height), (0,0,0), thickness=1, lineType=8, shift=0)
+    cv.line(img, (width - 1, 0), (width - 1, height), (0,0,0), thickness=1, lineType=8, shift=0)
+	
     y_step = int(height / NUM_AVGING_SECTIONS)
     histogram = np.zeros((NUM_AVGING_SECTIONS, width))
     
+	
+    hist = img
     for y in range(NUM_AVGING_SECTIONS):
         for x in range(width):
             slice = img[y*y_step:(y+1)*y_step, x]
             avg = np.average(slice)
             histogram[y][x] = avg
-            hist = img
             cv.line(hist, (x, y*y_step), (x, (y+1)*y_step), (avg, avg, avg), thickness=1, lineType=8, shift=0)
-    cv.imshow("Histogram", hist)
+    #cv.imshow("Histogram", hist)
     #/Averaging
     
     #Peak detection:
     pks = img
+    pkpts = []
     for i in range(NUM_AVGING_SECTIONS):
-        peaks, _ = find_peaks(histogram[i][:], 200)
+        peaks, _ = find_peaks(histogram[i][:], 200, distance=PEAK_DISTANCE)
         for peak in peaks:
-            cv.line(hist, (peak, i*y_step), (peak, (i+1)*y_step), (0, 0, 255), thickness=2, lineType=8, shift=0)
+            pkpts.append((peak, int(((i*y_step)+(i+1)*y_step)/2)))
+            #cv.circle(pks, (peak, int(((i*y_step)+(i+1)*y_step)/2)), 5, (0, 0, 255), thickness=-1, lineType=8, shift=0)
+            cv.line(pks, (peak - int(PEAK_DISTANCE/2), int(((i*y_step)+(i+1)*y_step)/2)), (peak + int(PEAK_DISTANCE/2), int(((i*y_step)+(i+1)*y_step)/2)), (0,0,255), thickness=2, lineType=8, shift=0)
+    for peak in pkpts:
+        cv.circle(pks, peak, 5, (0, 0, 255), thickness=-1, lineType=8, shift=0)
     cv.imshow("Peaks", pks)
+		
     #/Peak detection
-    return hist
+	
+    return pks
     #/Averaging
 #/DETECT_LANES
 ###/FUNCTIONS
@@ -147,8 +160,8 @@ def trackbar_setup():
         cv.createTrackbar("LS", "Trackbars", 40, 255, trackbar_call)
         cv.createTrackbar("US", "Trackbars", 160, 255, trackbar_call)
     if USER_DEFINES_PERSPECTIVE:
-        cv.createTrackbar("PS", "Trackbars", 0, 1000, trackbar_call)
-        cv.createTrackbar("PSH", "Trackbars", 0, 1000, trackbar_call)
+        cv.createTrackbar("PS", "Trackbars", 200, 1000, trackbar_call)
+        cv.createTrackbar("PSH", "Trackbars", 400, 1000, trackbar_call)
     return
     
 #/TRACKBAR_SETUP
