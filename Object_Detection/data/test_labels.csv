@@ -1,0 +1,6 @@
+filename,width,height,class,xmin,ymin,xmax,ymax
+1.jpg,615,300,stop_sign,221,7,325,106
+2.jpg,3460,2316,stop_sign,2004,343,2809,1100
+3.jpg,800,533,stop_sign,570,82,781,284
+4.jpg,658,357,stop_sign,533,27,618,123
+5.jpg,670,409,stop_sign,304,95,499,266

@@ -1,0 +1,26 @@
+<annotation>
+	<folder>Stop Sign Dataset</folder>
+	<filename>10.jpg</filename>
+	<path>C:\Users\khali\OneDrive\OneDrive for Business\Desktop\Fall 2019\ENSC 424\Project\Stop-Sign-Detection\Stop Sign Dataset\10.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>2462</width>
+		<height>1735</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>1</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>304</xmin>
+			<ymin>366</ymin>
+			<xmax>840</xmax>
+			<ymax>890</ymax>
+		</bndbox>
+	</object>
+</annotation>
