@@ -24,11 +24,13 @@ class NeuralNetwork:
 		self.biases = [np.random.randn(x, 1) for x in self.layers[1:]] #create list of lists corresponding to the bias of each neuron
 
 	def feedForward(self, input):
-		self.neurons[0] = input
+		self.neurons[0] = input #place inputs into the first layer of the network
 		for i in range(1, len(self.layers)):
+			#iterate over every layer
 			for j in range(0, len(self.neurons[i])):
-				self.neurons[i][j] = sigmoid(np.dot(self.neurons[i - 1], self.weights[i - 1][j]) + self.biases[i - 1][j])
-		return self.neurons[-1]
+				#iterate over every neuron in every layer
+				self.neurons[i][j] = sigmoid(np.dot(self.neurons[i - 1], self.weights[i - 1][j]) + self.biases[i - 1][j]) #compute the values of the jth jth layer of neurons
+		return self.neurons[-1] #return the list of the values of the output layer
 
    	def compute_activations(self, x, W, B):
 		a = x
@@ -47,7 +49,7 @@ class NeuralNetwork:
 		delta_w = [np.zeros(w.shape) for w in W]
 
 		##compute error in output neuron
-		delta_out = self.sigmoidPrime(z_s[-1]) * (y - a_s[-1])
+		delta_out = sigmoidPrime(z_s[-1]) * (y - a_s[-1])
 
 		##initialize last element of delta_b and delta_w
 		delta_b[-1] = delta_out
@@ -57,7 +59,7 @@ class NeuralNetwork:
 		num_layers = len(self.layers)
 		delta = delta_out
 		for layer in xrange(2, num_layers):
-		    delta =  np.dot(W[-layer + 1].transpose(), delta) * self.sigmoidPrime(z_s[-layer])
+		    delta =  np.dot(W[-layer + 1].transpose(), delta) * sigmoidPrime(z_s[-layer])
 		    delta_b[-layer] = delta
 		    delta_w[-layer] = np.dot(delta, a_s[-layer - 1].transpose())
 
