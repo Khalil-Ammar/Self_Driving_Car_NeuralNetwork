@@ -57,7 +57,7 @@ class NeuralNetwork:
         num_layers = len(self.layers)
         delta = delta_out
         for layer in xrange(2, num_layers):
-            delta =  np.dot(W[-layer + 1].transpose(), delta) * self.derivative_activation(z_s[-layer])
+            delta =  np.dot(W[-layer + 1].transpose(), delta) * self.sigmoidPrime(z_s[-layer])
             delta_b[-layer] = delta
             delta_w[-layer] = np.dot(delta, a_s[-layer - 1].transpose())
 
