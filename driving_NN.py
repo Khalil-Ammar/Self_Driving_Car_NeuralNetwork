@@ -36,8 +36,8 @@ class NeuralNetwork(object):
         num_layers = len(self.layers)
         delta = delta_out
         for layer in xrange(2, num_layers):
-            delta =  np.dot(W[-l+1].transpose(), delta) * self.derivative_activation(z_s[-l])
-            delta_b[-l] = delta
-            delta_w[-l] = np.dot(delta, a_s[-l-1].transpose())
+            delta =  np.dot(W[-layer + 1].transpose(), delta) * self.derivative_activation(z_s[-layer])
+            delta_b[-layer] = delta
+            delta_w[-layer] = np.dot(delta, a_s[-layer - 1].transpose())
 
         return (delta_b, delta_w)
