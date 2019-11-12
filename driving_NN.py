@@ -4,6 +4,7 @@
 
 import numpy as np
 import time
+import pickle
 
 def sigmoid(x):
 	return np.exp(x) / (1 + np.exp(x))
@@ -22,6 +23,12 @@ class NeuralNetwork:
         self.neurons = [np.zeros(x) for x in self.layers[0:]] #create list of lists corresponding to the value of each neuron
         self.weights = [np.random.randn(y, x) for x, y in zip(self.layers[:-1], self.layers[1:])] # create list of 2d lists corresponding to all weights
         self.biases = [np.random.randn(x) for x in self.layers[1:]] #create list of lists corresponding to the bias of each neuron
+
+    def load_data(self, dataset_path):
+        train_data = pickle.load(open(dataset_path+'/train.pkl', 'rb'))
+        valid_data = pickle.load(open(dataset_path+'/valid.pkl', 'rb'))
+
+        return train_data, valid_data
 
     def feedForward(self, input):
         self.neurons[0] = input #place inputs into the first layer of the network
@@ -44,7 +51,7 @@ class NeuralNetwork:
             a_s.append(np.zeros((n1, 1)))
 
         for i in range(len(W)):
-            z_s[i+1] = np.dot(W[i], a_s[i]) + B[i]
+            z_s[i+1] = np.dot(W[i], a_s[i]) - B[i]
             a_s[i+1] = sigmoid(z_s[i+1])
 
         return (z_s, a_s)
@@ -72,7 +79,60 @@ class NeuralNetwork:
             d_b[i] = -delta[i]
             d_w[i] = np.dot(delta[i][np.newaxis].transpose(), a_s[i][np.newaxis])
 
-        return d_w, d_b, z_s, a_s
+        return d_w, d_b
 
-nn = NeuralNetwork([5000, 300, 20])
-nn.backpropagation(np.random.randn(5000), np.random.randn(20))
+    def calc_error(self, X):
+        err = 0
+        n_true = 0.0
+        for row in X:
+            x = row[:-1]
+            y = row[-1]
+            z_s, a_s = self.compute_activations(x)
+            if (a_s[-1].round() - y) == 0:
+                n_true += 1
+            err += (a_s[-1] - y)
+        return float(err / len(X)), float(n_true / len(X))
+
+    def update_weights(self, d_w, d_b, learning_rate):
+        self.weights = [w + learning_rate * dw for w,dw in zip(self.weights, d_w)]
+        self.biases = [b + learning_rate * db for b,db in zip(self.biases, d_b)]
+
+    def SGD(self, train_data, test_data, max_epoch, learning_rate):
+        ##print initial loss and accuracy
+        train_loss, train_acc = self.calc_error(train_data)
+        valid_loss, valid_acc = self.calc_error(valid_data)
+        print("Evaluate using randomly initialized weights:\nTrain Loss: {2:4.4f}\tValidation Loss: {3:4.4f}\tTrain Acc: {4:4.4f}\tValidation Acc: {5:4.4f}\n\n".format(
+            0, max_epoch, train_loss, valid_loss, train_acc, valid_acc))
+
+        ## perform gradient descent
+        for e in range(max_epoch):
+            for row in train_data:
+                ##extract input and outputs
+                x = row[:-1]
+                y = row[-1]
+
+                ## backpropagation and update weights
+                d_w, d_b = self.backpropagation(x, y)
+                self.update_weights(d_w, d_b, learning_rate)
+
+            ## print accuracy and loss for each epoch
+            train_loss, train_acc = self.calc_error(train_data)
+            valid_loss, valid_acc = self.calc_error(valid_data)
+            print("Epoch #{0:4}/{1}\tTrain Loss: {2:4.4f}\tValid Loss: {3:4.4f}\tTrain Acc: {4:4.4f}\tValid Acc: {5:4.4f}".format(
+                e, max_epoch, train_loss, valid_loss, train_acc, valid_acc))
+
+        return
+
+if __name__ == '__main__':
+    ## init network
+    nn = NeuralNetwork([784, 30, 1])
+
+    ##set parameters
+    learning_rate = 0.1
+    max_epoch = 40
+
+    ##get data
+    train_data, valid_data = nn.load_data("dataset")
+
+    ##train network
+    nn.SGD(train_data, valid_data, max_epoch, learning_rate)
