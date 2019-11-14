@@ -20,6 +20,7 @@ class NeuralNetwork:
     def __init__(self, topology):
         self.numLayers = len(topology)
         self.layers = topology
+        self.out_nrn_nbr = topology[-1]	##number of neurons in the last layer
         self.neurons = [np.zeros(x) for x in self.layers[0:]] #create list of lists corresponding to the value of each neuron
         self.weights = [np.random.randn(y, x) for x, y in zip(self.layers[:-1], self.layers[1:])] # create list of 2d lists corresponding to all weights
         self.biases = [np.random.randn(x) for x in self.layers[1:]] #create list of lists corresponding to the bias of each neuron
@@ -85,8 +86,8 @@ class NeuralNetwork:
         err = 0
         n_true = 0.0
         for row in X:
-            x = row[:-1]
-            y = row[-1]
+            x = row[:-self.out_nrn_nbr]
+            y = row[-self.out_nrn_nbr]
             z_s, a_s = self.compute_activations(x)
             if (a_s[-1].round() - y) == 0:
                 n_true += 1
@@ -103,13 +104,12 @@ class NeuralNetwork:
         valid_loss, valid_acc = self.calc_error(valid_data)
         print("Evaluate using randomly initialized weights:\nTrain Loss: {2:4.4f}\tValidation Loss: {3:4.4f}\tTrain Acc: {4:4.4f}\tValidation Acc: {5:4.4f}\n\n".format(
             0, max_epoch, train_loss, valid_loss, train_acc, valid_acc))
-
         ## perform gradient descent
         for e in range(max_epoch):
             for row in train_data:
                 ##extract input and outputs
-                x = row[:-1]
-                y = row[-1]
+                x = row[:-self.out_nrn_nbr]
+                y = row[-self.out_nrn_nbr]
 
                 ## backpropagation and update weights
                 d_w, d_b = self.backpropagation(x, y)
