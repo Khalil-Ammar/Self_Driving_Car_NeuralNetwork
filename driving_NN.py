@@ -26,7 +26,7 @@ class NeuralNetwork:
         self.biases = [np.random.randn(x) for x in self.layers[1:]] #create list of lists corresponding to the bias of each neuron
         self.biases = [b.reshape(b.shape[0],1) for b in self.biases]
 
-	def load_data(self, dataset_path):
+    def load_data(self, dataset_path):
         train_data = pickle.load(open(dataset_path+'/train.pkl', 'rb'))
         valid_data = pickle.load(open(dataset_path+'/valid.pkl', 'rb'))
 
@@ -104,6 +104,8 @@ class NeuralNetwork:
             d_w[i] = np.dot(delta[i], a_s[i].transpose())
         return d_w, d_b
 
+
+
     def calc_error(self, X):
         n_true = 0.0
         for row in X:
@@ -119,6 +121,7 @@ class NeuralNetwork:
         self.biases = [b + learning_rate * db for b,db in zip(self.biases, d_b)]
 
     def SGD(self, train_data, valid_data, max_epoch, learning_rate):
+        timestr = time.strftime("%Y%m%d-%H%M%S")
         ##print initial loss and accuracy
         valid_acc = self.calc_error(valid_data)
         print("Evaluate using randomly initialized weights:\tValidation Acc: {0:4.4f}\n\n".format(valid_acc))
@@ -137,6 +140,9 @@ class NeuralNetwork:
             valid_acc = self.calc_error(valid_data)
             print("Epoch #{0:4}/{1}\tValid Acc: {2:4.4f}".format(
                 e, max_epoch, valid_acc))
+		# Save the model
+        with open('model-' + timestr + '.pkl', 'wb') as output:
+            pickle.dump((self.weights, self.biases), output, pickle.HIGHEST_PROTOCOL)
 
         return
 
@@ -144,7 +150,7 @@ if __name__ == '__main__':
     ## init network
     input_shape = (160*120,1)
     out_layer_length = 4
-    nn = NeuralNetwork([input_shape[0], 100, 200, out_layer_length])
+    nn = NeuralNetwork([input_shape[0], 200, 200, 150, out_layer_length])
 
     ##set parameters
     learning_rate = 0.1
