@@ -3,6 +3,8 @@ from string import digits
 import os
 import pickle
 import random
+import cv2
+import numpy as np
 
 def get_average(set):
     return int(sum(set)/len(set))
@@ -15,11 +17,12 @@ def extract_data(images_path):
     for fname in os.listdir(os.getcwd()):
         if fname.endswith(".jpg"):
             im = Image.open(fname, 'r')
-            pixels = list(im.getdata())
-            pixels_flat = [get_average(tuple) for tuple in pixels] ##flatten pixel values
+            gray_im = cv2.cvtColor(np.float32(im), cv2.COLOR_BGR2GRAY)
+            pixels_flat = gray_im.flatten()/255 ##flatten pixel values
             fname = os.path.splitext(fname)[0] ##remove extensions from file name
             direction = fname.translate(translate_table) ##extract direction from file name
             data_list.append((pixels_flat,nn_out_dict[direction]))
+
 
     return data_list
 
