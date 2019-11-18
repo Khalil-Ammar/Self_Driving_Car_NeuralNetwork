@@ -5,6 +5,7 @@
 import numpy as np
 import time
 import pickle
+import random
 
 def sigmoid(x):
 	return 1.0/(1.0+np.exp(-x))
@@ -140,6 +141,9 @@ class NeuralNetwork:
             valid_acc = self.calc_error(valid_data)
             print("Epoch #{0:4}/{1}\tValid Acc: {2:4.4f}".format(
                 e, max_epoch, valid_acc))
+
+			##shuffle data to prevent overfitting
+            random.shuffle(train_data)
 		# Save the model
         with open('model-' + timestr + '.pkl', 'wb') as output:
             pickle.dump((self.weights, self.biases), output, pickle.HIGHEST_PROTOCOL)
@@ -150,7 +154,7 @@ if __name__ == '__main__':
     ## init network
     input_shape = (160*120,1)
     out_layer_length = 4
-    nn = NeuralNetwork([input_shape[0], 200, 200, 150, out_layer_length])
+    nn = NeuralNetwork([input_shape[0], 300, out_layer_length])
 
     ##set parameters
     learning_rate = 0.1
