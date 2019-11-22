@@ -6,6 +6,7 @@ import numpy as np
 import time
 import pickle
 import random
+import os
 
 def sigmoid(x):
 	return 1.0/(1.0+np.exp(-x))
@@ -32,6 +33,14 @@ class NeuralNetwork:
         valid_data = pickle.load(open(dataset_path+'/valid.pkl', 'rb'))
 
         return train_data, valid_data
+
+    def test_model(self, test_data_path, model_path):
+        ##read model weights and biases
+        self.weights, self.biases = pickle.load(open(model_path, 'rb'))
+        test_data = pickle.load(open(test_data_path, 'rb'))
+        test_accuracy = self.calc_error(test_data)
+        print("Test Accuracy: {0:4.4f}".format(test_accuracy))
+
 
 	## returns a vector of length 'out_len' where the index y is 1 and everything else is 0
     def vectorize(self, y, out_len):
@@ -145,10 +154,14 @@ class NeuralNetwork:
 			##shuffle data to prevent overfitting
             random.shuffle(train_data)
 		# Save the model
-        with open('model-' + timestr + '.pkl', 'wb') as output:
+        model_name = 'model-' + timestr + '.pkl'
+        with open(model_name, 'wb') as output:
             pickle.dump((self.weights, self.biases), output, pickle.HIGHEST_PROTOCOL)
 
-        return
+        return model_name
+
+
+
 
 if __name__ == '__main__':
     ## init network
@@ -158,11 +171,15 @@ if __name__ == '__main__':
 
     ##set parameters
     learning_rate = 0.1
-    max_epoch = 100
+    max_epoch = 50
 
     ##get data
     train_data, valid_data = nn.data_wrapper("./dataset/vision",input_shape, out_layer_length)
 
 
     ##train network
-    nn.SGD(train_data, valid_data, max_epoch, learning_rate)
+    model_name = nn.SGD(train_data, valid_data, max_epoch, learning_rate)
+
+    ##test model
+    model_path = os.getcwd()
+    nn.test_model("./dataset/vision/valid.pkl",os.path.join(model_path, model_name))
