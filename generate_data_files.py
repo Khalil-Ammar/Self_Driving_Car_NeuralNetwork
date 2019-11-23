@@ -41,7 +41,7 @@ if __name__ == "__main__":
     train_data_fname = "train.pkl"
     valid_data_fname = "valid.pkl"
     random.shuffle(data)
-    train_data_length = int(0.75*len(data)) ## choose training data as 75% of the dataset
+    train_data_length = int(0.9*len(data)) ## choose training data as 75% of the dataset
     train_data = data[:train_data_length]
     valid_data = data[train_data_length:]
 
