@@ -13,11 +13,13 @@ def get_average(set):
 def extract_data(images_path):
     os.chdir(images_path)
     data_list = []
+    img_list = []
     # nn_out_dict = {'left' : 0, 'right' : 1, 'forward': 2, 'stop': 3}
     # translate_table = str.maketrans(dict.fromkeys(digits)) ##used to extract direction from file name
     for fname in os.listdir(os.getcwd()):
         if fname.endswith(".jpg"):
             im = Image.open(fname, 'r')
+            img_list.append(im)
             gray_im = cv2.cvtColor(np.float32(im), cv2.COLOR_BGR2GRAY)
             gray_im = imutils.resize(gray_im, width=160)
             pixels_flat = gray_im.flatten()/255 ##flatten pixel values
@@ -25,7 +27,7 @@ def extract_data(images_path):
             direction = int(fname[0]) ##extract direction from file name
             data_list.append((pixels_flat,direction))
 
-    return data_list
+    return data_list, img_list
 
 def create_data_file(out_file_name, data):
     fname = out_file_name
@@ -35,7 +37,7 @@ def create_data_file(out_file_name, data):
 
 if __name__ == "__main__":
     images_path = "./warped"
-    data = extract_data(images_path)
+    data, _ = extract_data(images_path)
 
     ##shuffle and assign training and validation data
     train_data_fname = "train.pkl"
@@ -49,3 +51,5 @@ if __name__ == "__main__":
     ##convert data to .pkl format
     create_data_file(train_data_fname, train_data)
     create_data_file(valid_data_fname, valid_data)
+
+    os.chdir("../")

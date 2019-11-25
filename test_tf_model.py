@@ -1,8 +1,6 @@
 import tensorflow as tf
 import numpy as np
-import pickle
-import time
-from PIL import Image
+import matplotlib.pyplot as plt
 import tensorflow.compat.v1 as tf
 from driving_NN_tf import NeuralNetwork
 from generate_data_files import extract_data
@@ -25,7 +23,7 @@ def test_model(test_data, predictions, target):
 
 
 if __name__ == "__main__":
-    model_name = "models/model-20191124-190659-10"
+    model_name = "models/model-20191124-192206-500"
     with tf.Session() as sess:
         ##extract parameters
         saver = tf.train.import_meta_graph("{0}.meta".format(model_name))
@@ -54,9 +52,17 @@ if __name__ == "__main__":
         keep_prob = tf.placeholder("float")
         predictions = frozen_nn.feedForward(x, keep_prob)
 
-        ##run inference
+        # test_model(test_data, predictions, y)
+
+        #run inference
+        direction_dict = {0: 'stop', 1:'forward', 2: 'left', 3: 'right'}
         target_img_path = "test_images"
-        input = np.asarray(extract_data(target_img_path)[0][0])
-        input= input[np.newaxis]
-        print(input.shape)
-        print(sess.run(tf.argmax(predictions,1), {x: input, keep_prob: 1.0}))
+        input_list, img_list = extract_data(target_img_path)
+        for input, img in zip(input_list, img_list):
+            input = input[0]
+            input= input[np.newaxis]
+            output = sess.run(tf.argmax(predictions,1), {x: input, keep_prob: 1.0})
+            direction = direction_dict[output[0]]
+            plt.title("{0}".format(direction))
+            plt.imshow(img)
+            plt.show()
