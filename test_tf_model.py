@@ -59,10 +59,12 @@ if __name__ == "__main__":
         target_img_path = "test_images"
         input_list, img_list = extract_data(target_img_path)
         for input, img in zip(input_list, img_list):
-            input = input[0]
-            input= input[np.newaxis]
-            output = sess.run(tf.argmax(predictions,1), {x: input, keep_prob: 1.0})
+            nn_input = input[0]
+            target = direction_dict[input[1]]
+
+            nn_input= nn_input[np.newaxis]
+            output = sess.run(tf.argmax(predictions,1), {x: nn_input, keep_prob: 1.0})
             direction = direction_dict[output[0]]
-            plt.title("{0}".format(direction))
+            plt.title("pred = {0}, actual = {1}".format(direction, target))
             plt.imshow(img)
             plt.show()
